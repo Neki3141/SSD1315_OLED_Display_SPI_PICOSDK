@@ -99,7 +99,7 @@ public:
 
     /// @brief Send a command with no data to the SSD1315 display.
     /// @param command The command byte to send.
-    void send_command(uint8_t command);                       // new: no-parameter overload
+    void send_command(uint8_t command); 
 
 private:
     spi_inst_t *spi_{nullptr};
@@ -107,6 +107,11 @@ private:
     bool is_command_mode_{true}; // true for command mode, false for data mode
     uint8_t pixels_buffer_[WIDTH * HEIGHT / 8]{0};
 
+    /// @brief Write bytes to the SPI interface.
+    /// @param is_data true if the bytes are data, false if they are commands.
+    /// @param data data to send over SPI.
+    /// @param length legth of the data to send.
+    /// @return true if the bytes were written successfully, false otherwise.
     bool write_bytes(bool is_data, const uint8_t* data, size_t length);  // replaces send_spi
 };
 

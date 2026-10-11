@@ -28,15 +28,23 @@ int main()
     spi_init(SPI_PORT, BAUD_RATE);
 
     Ssd1315_spi display(SPI_PORT, PIN_DC, PIN_CS, PIN_RST, PIN_SCK, PIN_MOSI);
+    Ssd1315_spi::Coordinate rect_pos = {20, 20}; // Position for the rectangle
+    Ssd1315_spi::Coordinate line_start = {0, 0}; // Start position for the line
+    Ssd1315_spi::Coordinate line_end = {127, 63}; // End position for the line
+    
+    
     display.init();
     display.turn_on();
-    display.draw_rectangle(20, 20, 50, 30, true); // Draw a filled rectangle
-    display.draw_line(0, 0, 127, 63); // Draw a line from top-left to bottom-right
+    display.draw_rectangle(rect_pos, 50, 30, false); 
+    display.draw_line(line_start, line_end); // Draw a line from top-left to bottom-right
+    display.draw_text({10, 50}, "Hello -%", 2, 4); // Draw the text "Hello" at position (10, 50)
+    display.draw_char({100, 10}, 'A', 2); // Draw the character 'A' at position (100, 50)
     display.apply_changes(); // Push the changes to the display
     
 
     while (true) {
         printf("Hello, world!\n");
         sleep_ms(1000);
+
     }
 }
