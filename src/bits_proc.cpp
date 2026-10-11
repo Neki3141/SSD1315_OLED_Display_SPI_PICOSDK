@@ -47,8 +47,8 @@ void BitsProc::init() {
 
 void BitsProc::modify_pixel(uint8_t x, uint8_t y, bool on) {
     if (x >= WIDTH || y >= HEIGHT) return; // Out of bounds check
-    size_t index = (y / 8) * WIDTH + x; // Calculate the index in the buffer
-    uint8_t bit_position = y % 8; // Determine which bit to set/clear
+    size_t index = (y / PAGE_HEIGHT) * WIDTH + x; // Calculate the index in the buffer
+    uint8_t bit_position = y % PAGE_HEIGHT; // Determine which bit to set/clear
 
     if (on) {
         pixels_buffer_[index] |= (1 << bit_position); // Set the pixel

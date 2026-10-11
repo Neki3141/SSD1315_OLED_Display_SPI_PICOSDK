@@ -1,8 +1,8 @@
 #ifndef BITS_PROC_HPP
 #define BITS_PROC_HPP
 
-#include <stdio.h>
-#include <stdint.h>   
+#include <cstdio>
+#include <cstdint>   
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
 
@@ -10,6 +10,9 @@
 #define WIDTH 128
 #define PAGE_HEIGHT 8
 
+/// ------------------------------------------------------------------
+/// Command bytes for the SSD1315 display
+/// ------------------------------------------------------------------
 namespace Cmd
 {
     constexpr uint8_t SET_CONTRAST = 0x81;
@@ -54,7 +57,7 @@ namespace CmdParam{
 // SPI / timing
 // ------------------------------------------------------------------
 constexpr uint8_t  SPI_DATA_BITS = 8;
-constexpr uint32_t RESET_STEP_MS = 10;
+constexpr uint16_t RESET_STEP_MS = 10;
 constexpr uint8_t  PIN_LOW  = 0;
 constexpr uint8_t  PIN_HIGH = 1;
 constexpr uint8_t  DC_COMMAND = PIN_LOW;

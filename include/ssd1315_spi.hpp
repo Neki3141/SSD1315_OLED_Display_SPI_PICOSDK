@@ -4,11 +4,10 @@
 #include <cstdint>
 #include <cstdio>
 #include <array>
-#include <unordered_map>
+#include <map>
 #include <cctype>
 #include "bits_proc.hpp"
-#include "pico/stdlib.h"
-#include "hardware/spi.h"
+
 
 /**
  * @brief Structure to represent a character and its corresponding column data for the font.
@@ -18,14 +17,17 @@
 struct Character { char ch; uint8_t col[5]; };
 
 
-
-static const std::unordered_map<char, const std::array<uint8_t, 5>> FONT_MAP = {
+/**
+ * @brief A class to interface with the SSD1315 OLED display over SPI.
+ * This class provides methods to initialize the display, draw shapes, text, and manage the display buffer.
+ */
+static const std::map<char, const std::array<uint8_t, 5>> FONT_MAP = {
     {' ', {0x00,0x00,0x00,0x00,0x00}}, {'!', {0x00,0x00,0x5F,0x00,0x00}},
     {'-', {0x08,0x08,0x08,0x08,0x08}}, {'.', {0x00,0x60,0x60,0x00,0x00}},
-    {':', {0x00,0x36,0x36,0x00,0x00}},
+    {':', {0x00,0x36,0x36,0x00,0x00}}, {'_', {0x80,0x80,0x80,0x80,0x80}},
     {';', {0x00,0x36,0x36,0x00,0x00}}, {'#', {0x14,0x7F,0x14,0x7F,0x14}},
     {'$', {0x24,0x2A,0x7F,0x2A,0x12}}, {'%', {0x23,0x13,0x08,0x64,0x62}},
-    {'&', {0x36,0x49,0x55,0x22,0x50}}, {'\'', {0x00,0x00,0x07,0x00,0x00}},
+    {'&', {0x36,0x49,0x55,0x22,0x50}}, {'\'',{0x00,0x00,0x07,0x00,0x00}},
     {'(', {0x00,0x1C,0x22,0x41,0x00}}, {')', {0x00,0x41,0x22,0x1C,0x00}},
     {'*', {0x14,0x08,0x3E,0x08,0x14}}, {'+', {0x08,0x08,0x3E,0x08,0x08}},
     {'0', {0x3E,0x51,0x49,0x45,0x3E}}, {'1', {0x00,0x42,0x7F,0x40,0x00}},
@@ -67,12 +69,17 @@ public:
     /// @param y The y-coordinate (0-63).
     struct Coordinate { uint8_t x; uint8_t y; };
 
+    /// @brief Enum to represent the state of a pixel.
+    enum class Pixel : bool { Off = false, On = true };
+
     /// @brief Initialize the SSD1315 display.
     /// This function initializes the display by sending the necessary commands to set it up.
+    /// @note This function should be called before any other display operations.
     void init();
     
     /// @brief Turn on the SSD1315 display.
     void turn_on();
+    
     /// @brief Turn off the SSD1315 display.
     void turn_off();
     // void set_contrast(uint8_t contrast);
@@ -82,28 +89,39 @@ public:
     /// @param pos position of the top-left corner of the rectangle.
     /// @param width The width of the rectangle.
     /// @param height The height of the rectangle.
+    /// @param on The state of the rectangle (on or off).
     /// @param is_filled Whether the rectangle should be filled.
-    void draw_rectangle(Coordinate pos, uint8_t width, uint8_t height, bool is_filled = false);
+    void draw_rectangle(Coordinate pos, uint8_t width, uint8_t height, Pixel on, bool is_filled = false);
     
     
     /// @brief Draw a line on the display.
     /// @param p0 The start point of the line.
     /// @param p1 The end point of the line.
-    void draw_line(Coordinate p0, Coordinate p1);
+    /// @param on The state of the line (on or off).
+    void draw_line(Coordinate p0, Coordinate p1, Pixel on);
 
     /// @brief Draw text on the display.
     /// @param pos The position to start drawing the text.
     /// @param text The text to draw.
     /// @param size How big the text is.
+    /// @param on The state of the text (on or off).
     /// @param spacing The spacing between characters.
-    void draw_text(Coordinate pos, const char* text, size_t size, size_t spacing = 1);
+    void draw_text(Coordinate pos, const char* text, size_t size, Pixel on, size_t spacing = 1);
 
     /// @brief Draw a single character on the display.
     /// @param pos The position to start drawing the character.
     /// @param c The character to draw.
+    /// @param on The state of the character (on or off).
     /// @param size How big the character is.
-    void draw_char(Coordinate pos, char c, size_t size);
+    void draw_char(Coordinate pos, char c, Pixel on, size_t size);
     
+    /// @brief Remove a rectangular area from the display by turning off the pixels in that area.
+    /// @note This function modifies the display buffer but does not immediately update the display.
+    /// @param pos The position of the top-left corner of the area to remove.
+    /// @param width width of the area to remove.
+    /// @param height height of the area to remove.
+    void remove_area(Coordinate pos, uint8_t width, uint8_t height);
+
     /// @brief Clear the display buffer and the actual display.
     void clear();
     
@@ -119,7 +137,7 @@ private:
     /// @param x x-coordinate of the pixel (0-127)
     /// @param y y-coordinate of the pixel (0-63)
     /// @param on The state of the pixel (true for on, false for off)
-    void set_pixel(Coordinate pos, bool on = true);
+    void set_pixel(Coordinate pos, Pixel on = Pixel::On);
     
     /// @brief Get the state of a pixel in the display buffer.
     /// @param x x-coordinate of the pixel (0-127)
